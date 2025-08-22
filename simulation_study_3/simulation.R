@@ -5,7 +5,7 @@ library(TargetedSMR)
 library(broom)
 library(mlr3extralearners)
 
-source("R/simulate_indirect.R")
+source("simulate.R")
 
 estimator <- function(data, m, seed, P) {
   N <- nrow(data)

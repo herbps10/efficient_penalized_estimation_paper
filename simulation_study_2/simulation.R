@@ -3,8 +3,8 @@ library(CausalShrink)
 library(glmnet)
 library(tmle)
 
-source("R/simulate_group_effects.R")
-source("R/estimator_group_effects.R")
+source("simulate_group_effects.R")
+source("../R/estimator_group_effects.R")
 
 SL.library <- c("SL.glm", "SL.glm.interaction", "SL.glmnet")
 

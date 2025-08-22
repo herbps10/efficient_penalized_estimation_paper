@@ -3,9 +3,7 @@ simulate <- function(seed = 1, N = 100, G = 5, beta = 2, theta = 0.2, sigma = 0.
 
   active_effects <- rbinom(G, 1, theta) 
   group_effects  <- runif(G, -1, 1) 
-  #group_effects <- rnorm(G, 0, 1)
    
-  #D            <- sample(1:G, N, replace = TRUE, prob = rep(1, 5, G)) 
   D            <- sample(1:G, N, replace = TRUE)
   p_D          <- rep(1 / G, N) 
   group_active <- active_effects[D] 

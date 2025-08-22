@@ -2,7 +2,7 @@ library(tidyverse)
 library(CausalShrink)
 library(glmnet)
 
-source("R/simulate_covariance.R")
+source("simulate.R")
 
 fit_models <- function(data, covariates, a, y, K = 5, learners = c("glm"), seed = NA) {
   N <- nrow(data)
@@ -14,12 +14,6 @@ fit_models <- function(data, covariates, a, y, K = 5, learners = c("glm"), seed 
   mu_hat <- unlist(lapply(1:K, \(fold_index) predict(mu_models[[fold_index]], newx = as.matrix(data[folds[[fold_index]], covariates]))))[order(unlist(folds))]
   pi_hat <- unlist(lapply(1:K, \(fold_index) predict(pi_models[[fold_index]], newx = as.matrix(data[folds[[fold_index]], covariates]), type = "response")))[order(unlist(folds))]
 
-  #mu_model <- mlr3superlearner::mlr3superlearner(data[, c(covariates, y)], y, library = learners, outcome_type = "continuous", folds = K)
-  #pi_model <- mlr3superlearner::mlr3superlearner(data[, c(covariates, a)], a, library = learners, outcome_type = "binomial", folds = K)
-  
-  #mu_hat <- predict(mu_model, newdata = data[, c(covariates, y)])
-  #pi_hat <- predict(pi_model, newdata = data[, c(covariates, a)])
-  
   list(mu_hat = mu_hat, pi_hat = pi_hat)
 }
 

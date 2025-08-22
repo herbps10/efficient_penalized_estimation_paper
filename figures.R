@@ -3,8 +3,7 @@ library(tmle)
 library(patchwork)
 
 ##### Example Figure #####
-
-source("R/simulate_group_effects.R")
+source("simulation_study_2/simulate.R")
 source("R/estimator_group_effects.R")
 
 colors = c(
