@@ -4,9 +4,10 @@ _Herbert P. Susmann, Yiting Li, Mara A. McAdams-DeMarco, and Iván Díaz._
 
 This repository includes replication materials for the simulation studies presented in the paper.
 
-The code depends on the package [`CausalShrink`](https://github.com/herbps10/CausalShrink). You can install `CausalShrink` using the `remotes` package:
+The code depends on the packages [`CausalShrink`](https://github.com/herbps10/CausalShrink) for all simulation studies, and the package [`TargetedRisk`](https://github.com/herbps10/TargetedRisk) for the third simulation study. You can install them using the `remotes` package:
 ```
 remotes::install_github("herbps10/CausalShrink")
+remotes::install_github("herbps10/TargetedRisk")
 ```
 
 ## Simulation Studies

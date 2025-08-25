@@ -1,7 +1,6 @@
-dyn.load("/gpfs/share/apps/gcc/11.2.0/lib64/libstdc++.so.6")
 library(tidyverse)
 library(CausalShrink)
-library(TargetedSMR)
+library(TargetedRisk)
 library(broom)
 library(mlr3extralearners)
 
