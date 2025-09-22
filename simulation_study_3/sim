@@ -1,0 +1,145 @@
+#!/bin/bash
+
+source env.sh
+
+usage() {
+  echo "Usage: $0 <command>"
+  echo 
+  echo "Available commands:"
+  echo "  start     Start batch job"
+  echo "  cancel    Cancel running batch job"
+  echo "  reset     Clear logs"
+  echo "  clean     Clear cache"
+  echo "  status    Print current job status"
+  echo "  watch     Watch current job status"
+  echo "  repl      Start interactive job"
+  echo "  logs      Print all logs"
+  echo "  cache     List existing cache files"
+  echo "  setup     Create cache and log directories"
+  echo "  help      Show this help message"
+}
+
+SCRIPT_DIR="$(cd "$(dirname "{BASH_SOURCE[0]}")" && pwd)"
+
+case "$1" in
+  start)
+    job_output=$(sbatch \
+       --job-name=$JOB_NAME \
+       --mail-user=$MAIL_USER \
+       --cpus-per-task=$CPUS_PER_TASK \
+       --partition=$PARTITION \
+       --ntasks=1 \
+       --time=$TIME \
+       --output=$SIMULATION_LOG_PATH/%j.log \
+       --error=$SIMULATION_LOG_PATH/%j.err \
+       --array=$ARRAY \
+       "$SCRIPT_DIR/batch.sh")
+
+    job_id=$(echo "$job_output" | awk '{print $4}')
+    echo "SLURM job $job_id submitted."
+    ;;
+  cancel)
+    scancel -n $JOB_NAME
+    ;;
+  reset)
+    if [[ ! -d "$SIMULATION_LOG_PATH" ]]; then
+      echo "Simulation log folder $SIMULATION_LOG_PATH not found."
+      exit 1
+    fi
+
+    echo "Are you sure you want to delete all log files in $SIMULATION_LOG_PATH? (y/N)"
+    read -r confirmation
+    case "$confirmation" in
+      [yY][eE][sS]|[yY])
+        echo "Deleting files in $SIMULATION_LOG_PATH..."
+        rm -rf $SIMULATION_LOG_PATH/*
+        echo "Reset complete."
+        ;;
+      *)
+        echo "Aborted. No files deleted."
+        ;;
+    esac
+    ;;
+
+  clean)
+    if [[ ! -d "$SIMULATION_CACHE_PATH" ]]; then
+      echo "Simulation cache folder $SIMULATION_CACHE_PATH not found."
+      exit 1
+    fi
+
+    echo "Are you sure you want to delete all cache files in $SIMULATION_CACHE_PATH? (y/N)"
+    read -r confirmation
+    case "$confirmation" in
+      [yY][eE][sS]|[yY])
+        echo "Deleting files in $SIMULATION_CACHE_PATH..."
+        rm -rf $SIMULATION_CACHE_PATH/*
+        echo "Clean complete."
+        ;;
+      *)
+        echo "Aborted. No files deleted."
+        ;;
+    esac
+    ;;
+
+  status)
+    logn=$(ls -1q $SIMULATION_LOG_PATH | wc -l)
+    cachen=$(find $SIMULATION_CACHE_PATH -type f | wc -l)
+    echo "Number of log files: $logn"
+    echo "Number of cache files: $cachen"
+    echo "SLURM queue:"
+    squeue -u $USER -n $JOB_NAME
+    ;;
+
+  watch)
+    watch -n 1 $SCRIPT_DIR/sim status
+    ;;
+
+  repl)
+    srun -p $PARTITION --ntasks=1 --ntasks-per-node=1 --cpus-per-task=1 --mem-per-cpu=16G -t 00-06:00:00 --pty bash
+    ;;
+
+  logs)
+    if [[ ! -d "$SIMULATION_LOG_PATH" ]]; then
+      echo "Log directory $SIMULATION_LOG_PATH not found."
+      exit 1
+    fi
+
+    logs=("$SIMULATION_LOG_PATH"/*)
+    if [[ -e "${logs[0]}" ]]; then
+      echo "=== Log file contents from $SIMULATION_LOG_PATH ==="
+      cat $SIMULATION_LOG_PATH/*
+    else
+      echo "There are no current logs in $SIMULATION_LOG_PATH"
+    fi
+    ;;
+
+  cache)
+    find $SIMULATION_CACHE_PATH
+    ;;
+
+  setup)
+    if [[ ! -d "$SIMULATION_CACHE_PATH" ]]; then
+      mkdir $SIMULATION_CACHE_PATH
+    fi
+
+    if [[ ! -d "$SIMULATION_LOG_PATH" ]]; then
+      mkdir $SIMULATION_LOG_PATH
+    fi
+    
+    echo "Simulation cache path: $SIMULATION_CACHE_PATH"
+    echo "Simulation log path:   $SIMULATION_LOG_PATH"
+
+    ;;
+
+  help|"")
+    usage
+    ;;
+  
+  *)
+    echo "Error: unknown command '$1'"
+    echo
+    usage
+    exit 1
+    ;;
+esac
+

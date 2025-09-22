@@ -1,8 +1,16 @@
 library(tidyverse)
 library(ebci)
 
-simulations <- read_rds("/gpfs/home/susmah01/PenalizedCausalInference/results/group_effects_results.rds") |>
-  filter(N > 2e3)
+root <- rprojroot::is_git_root                                                                         
+basepath <- root$find_file("simulation_study_3")  
+
+source(glue::glue("{basepath}/env.R"))
+source(glue::glue("{basepath}/../R/helpers.R"))
+
+results_path <- Sys.getenv("SIMULATION_RESULTS_PATH")
+if(results_path == "") stop("Please set SIMULATION_RESULTS_PATH environment variable.")
+
+simulations <- read_rds(glue::glue("{results_path}/simulation_results.rds"))
 
 summarized_results <- simulations |> 
   group_by(G, theta, beta, N, method, sigma) |>
@@ -29,17 +37,11 @@ results_table <- summarized_results |>
   ungroup() |>
   select(
     theta, sigma, N, 
-    mse_unpenalized, mse_l1, mse_l2, mse_empirical_bayes,
-    me_unpenalized, me_l1, me_l2, me_empirical_bayes,
+    mse_HKB, mse_unpenalized, mse_l1, mse_l2, mse_empirical_bayes,
+    me_HKB, me_unpenalized, me_l1, me_l2, me_empirical_bayes,
     coverage_unpenalized, coverage_l1, coverage_l2, coverage_empirical_bayes,
     ci_width_unpenalized, ci_width_l1, ci_width_l2, ci_width_empirical_bayes
   )
-
-remove_dups <- \(x) {
-  x <- as.character(x)
-  x[x == lag(x)] = ""
-  x
-}
 
 results_table_latex <- results_table |>
   select(-starts_with("ci_width")) |>

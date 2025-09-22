@@ -4,7 +4,7 @@ library(patchwork)
 
 ##### Example Figure #####
 source("simulation_study_2/simulate.R")
-source("R/estimator_group_effects.R")
+source("simulation_study_2/wrapper.R")
 
 colors = c(
   "L2 penalty" = "#3498db", 
@@ -87,9 +87,9 @@ data_medium <- simulate(seed = seed, N = G * 70, G = G, beta = 1, theta = 1, sig
 data_large  <- simulate(seed = seed, N = G * 200, G = G, beta = 1, theta = 1, sigma = 5)
 
 fits <- bind_rows(
-  estimator(data_small, G = G, SL.library) %>% mutate(sample_size = "small"),
-  estimator(data_medium, G = G, SL.library) %>% mutate(sample_size = "medium"),
-  estimator(data_large, G = G, SL.library) %>% mutate(sample_size = "large")
+  wrapper(data_small, G = G, SL.library) %>% mutate(sample_size = "small"),
+  wrapper(data_medium, G = G, SL.library) %>% mutate(sample_size = "medium"),
+  wrapper(data_large, G = G, SL.library) %>% mutate(sample_size = "large")
 )
 
 fits %>% filter(method == "l2")

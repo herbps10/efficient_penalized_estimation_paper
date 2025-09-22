@@ -1,6 +1,15 @@
 library(tidyverse)
 
-simulations <- read_rds("/gpfs/home/susmah01/PenalizedCausalInference/results/covariance_results.rds")
+root <- rprojroot::is_git_root                                                                         
+basepath <- root$find_file("simulation_study_1")  
+
+source(glue::glue("{basepath}/env.R"))
+source(glue::glue("{basepath}/../R/helpers.R"))
+
+results_path <- Sys.getenv("SIMULATION_RESULTS_PATH")
+if(results_path == "") stop("Please set SIMULATION_RESULTS_PATH environment variable.")
+
+simulations <- read_rds(glue::glue("{results_path}/simulation_results.rds"))
 
 results <- simulations |>
   select(-data) |>
@@ -65,13 +74,7 @@ summarized_results_combined <- results |>
             var = var(error),
             coverage = mean(lower < beta & upper > beta, na.rm = TRUE))
 
-write_rds(summarized_results_combined, "/gpfs/home/susmah01/PenalizedCausalInference/results/summarized_results_combined.rds")
-
-remove_dups <- \(x) {
-  x <- as.character(x)
-  x[x == lag(x)] = ""
-  x
-}
+write_rds(summarized_results_combined, glue::glue("{results_path}/summarized_results_combined.rds"))
 
 results_table <- summarized_results_combined |>
   filter(D == 100) |>
